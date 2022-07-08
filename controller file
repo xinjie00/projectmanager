@@ -1,0 +1,53 @@
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using ProductManagmentSystem.Models;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace ProductManagmentSystem.Controllers
+{
+    public class HomeController : Controller
+    {
+        private readonly ILogger<HomeController> _logger;
+        private Context context;
+        public HomeController(ILogger<HomeController> logger)
+        {
+            _logger = logger;
+            context = new Context();
+        }
+
+        public IActionResult Index()
+        {
+            return View();
+        }
+        public ActionResult Login(string UserName, string Password)
+        {
+            if (UserName=="ProductManager" && Password=="passProduct")
+            {
+                //this is session to store state and we can access anywhere in website
+                //HttpContext.Session.SetString("UserName", UserName);
+                return RedirectToAction("Index", "Product", null);
+            }
+            else
+            {
+                ViewBag.msg = "Invalid UserName or Password";
+                return View("Index");
+
+            }
+        }
+        public IActionResult Privacy()
+        {
+            return View();
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
+        {
+            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+    }
+}
