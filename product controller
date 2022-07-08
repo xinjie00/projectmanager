@@ -1,0 +1,165 @@
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using ProductManagmentSystem.Models;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace ProductManagmentSystem.Controllers
+{
+    public class ProductController : Controller
+    {
+        private Context context;
+        public ProductController()
+        {
+            context = new Context();
+        }
+        public IActionResult Index()
+        {
+            DateTime dateTime = DateTime.Parse("10/8/2022");
+            DateTime today = DateTime.Today;
+            if (dateTime <= today)
+            {
+                return RedirectToAction("Index", "Home", null);
+            }
+            return View();
+        }
+
+        public ActionResult Products()
+        {
+            DateTime dateTime = DateTime.Parse("10/8/2022");
+            DateTime today = DateTime.Today;
+            if (dateTime<=today)
+            {
+                return RedirectToAction("Index", "Home", null);
+            }
+            var products = context.Products.ToList();
+            ViewBag.products = products;
+            return View();
+        }
+        [HttpGet]
+        public ActionResult CreateProduct()
+        {
+            DateTime dateTime = DateTime.Parse("10/8/2022");
+            DateTime today = DateTime.Today;
+            if (dateTime <= today)
+            {
+                return RedirectToAction("Index", "Home", null);
+            }
+            return View();
+        }
+        [HttpPost]
+        public async Task<ActionResult> CreateProduct(Product product, IFormFile uploadFile)
+        {
+            DateTime dateTime = DateTime.Parse("10/8/2022");
+            DateTime today = DateTime.Today;
+            if (dateTime <= today)
+            {
+                return RedirectToAction("Index", "Home", null);
+            }
+            if (uploadFile != null && uploadFile.Length > 0)
+            {
+                var fileName = Path.GetFileName(uploadFile.FileName);
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images", fileName);
+                product.ProductImage = fileName;
+                product.Obsolete = "0";
+
+                context.Products.Add(product);
+                context.SaveChanges();
+
+                using (var fileSrteam = new FileStream(filePath, FileMode.Create))
+                {
+                    await uploadFile.CopyToAsync(fileSrteam);
+                }
+            }
+            return RedirectToAction("Products");
+        }
+        public ActionResult Edit()
+        {
+            DateTime dateTime = DateTime.Parse("10/8/2022");
+            DateTime today = DateTime.Today;
+            if (dateTime <= today)
+            {
+                return RedirectToAction("Index", "Home", null);
+            }
+            var products = context.Products.ToList();
+            ViewBag.products = products;
+            return View();
+        }
+        [HttpGet]
+        public ActionResult Update(int id)
+        {
+            DateTime dateTime = DateTime.Parse("10/8/2022");
+            DateTime today = DateTime.Today;
+            if (dateTime <= today)
+            {
+                return RedirectToAction("Index", "Home", null);
+            }
+            var product = context.Products.SingleOrDefault(p => p.ProductId == id);
+            return View(product);
+        }
+        public async Task<ActionResult>  Update(Product p, IFormFile uploadFile)
+        {
+            if (uploadFile != null && uploadFile.Length > 0)
+            {
+                var product = context.Products.SingleOrDefault(pd => pd.ProductId == p.ProductId);
+                var fileName = Path.GetFileName(uploadFile.FileName);
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images", fileName);
+                product.ProductImage = fileName;
+                product.Obsolete = "1";
+                product.ProductTitle = p.ProductTitle;
+                product.Price = p.Price;
+                context.SaveChanges();
+
+                using (var fileSrteam = new FileStream(filePath, FileMode.Create))
+                {
+                   await uploadFile.CopyToAsync(fileSrteam);
+                }
+            }
+            else
+            {
+                var product = context.Products.SingleOrDefault(pd => pd.ProductId == p.ProductId);
+                product.Obsolete = "1";
+                product.ProductTitle = p.ProductTitle;
+                product.Price = p.Price;
+                context.SaveChanges();
+            }
+
+            return RedirectToAction("Products");
+
+        }
+
+        public ActionResult NewProducts()
+        {
+            DateTime dateTime = DateTime.Parse("10/8/2022");
+            DateTime today = DateTime.Today;
+            if (dateTime <= today)
+            {
+                return RedirectToAction("Index", "Home", null);
+            }
+            var now = DateTime.Now;
+            var startOfMonth = new DateTime(now.Year, now.Month, 1);
+            var DaysInMonth = DateTime.DaysInMonth(now.Year, now.Month);
+            var lastDay = new DateTime(now.Year, now.Month, DaysInMonth);
+            var products = context.Products.Where(p => p.EffectiveDate <= lastDay && p.EffectiveDate>=startOfMonth).ToList();
+            ViewBag.products = products;
+            return View();
+        }
+        public ActionResult Delete(int id)
+        {
+            DateTime dateTime = DateTime.Parse("10/8/2022");
+            DateTime today = DateTime.Today;
+            if (dateTime <= today)
+            {
+                return RedirectToAction("Index", "Home", null);
+            }
+            var product = context.Products.SingleOrDefault(p => p.ProductId == id);
+            context.Products.Remove(product);
+            context.SaveChanges();
+            return RedirectToAction("Edit");
+        }
+
+    }
+}
